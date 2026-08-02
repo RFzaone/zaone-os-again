@@ -60,7 +60,8 @@ if [[ -f "$WORK_DIR/$PACKAGE_LIST" ]]; then
 
     [[ -z "$package_name" ]] && continue
 
-    if apt-cache show "$package_name" >/dev/null 2>&1; then
+    candidate="$(apt-cache policy "$package_name" | awk '/Candidate:/ {print $2; exit}')"
+    if [[ -n "$candidate" && "$candidate" != "(none)" ]]; then
       echo "$package_name" >> "$filtered"
     else
       echo "$package_name" | tee -a "$missing_report"

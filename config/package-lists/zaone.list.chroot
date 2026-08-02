@@ -64,7 +64,7 @@ openssh-client
 ca-certificates
 sudo
 polkitd
-policykit-1-gnome
+mate-polkit
 lightdm
 lightdm-gtk-greeter
 slick-greeter
