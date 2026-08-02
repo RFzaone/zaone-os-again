@@ -1,15 +1,11 @@
-EXTRACT THIS ZIP FIRST.
+Upload or extract **everything inside this folder** into the root of your GitHub repository, including the hidden `.github` folder.
 
-Upload all files and folders inside `zaone-v2-github-builder` to the ROOT of your GitHub repository.
+Then run:
 
-The repository root must contain:
-- build.sh
-- verify.sh
-- .github
-- assets
-- config
-- manifests
-- docs
+chmod +x build.sh verify.sh
+./verify.sh
+git add .
+git commit -m "Build Zaone OS V2.1"
+git push
 
-Then open GitHub Actions and run:
-Build Zaone V2 ISO
+GitHub Actions should create an artifact named `zaone-v2.1-iso`.

@@ -25,7 +25,7 @@ button { min-height: 44px; border-radius: 10px; font-weight: 600; }
 
 class SetupWindow(Gtk.Window):
     def __init__(self):
-        super().__init__(title="Welcome to Zaone OS")
+        super().__init__(title="Welcome to Zaone OS V2.1")
         self.set_default_size(760, 700)
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_resizable(False)
@@ -52,12 +52,12 @@ class SetupWindow(Gtk.Window):
         logo.set_pixel_size(90)
         card.pack_start(logo, False, False, 0)
 
-        title = Gtk.Label(label="Set up Zaone OS")
+        title = Gtk.Label(label="Set up Zaone OS V2.1")
         title.set_name("title")
         card.pack_start(title, False, False, 0)
 
         subtitle = Gtk.Label(
-            label="Create your account, secure the lock screen, and choose your appearance."
+            label="Create your account, set your password and PIN, and choose light or dark mode."
         )
         subtitle.set_name("subtitle")
         card.pack_start(subtitle, False, False, 0)

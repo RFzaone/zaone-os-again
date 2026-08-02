@@ -10,13 +10,15 @@ OPT="$ROOT/manifests/optional-packages.txt"
 [[ "$EUID" -eq 0 ]] || { echo "Run as root: sudo ./build.sh"; exit 1; }
 export DEBIAN_FRONTEND=noninteractive
 
-echo "== Zaone OS V2 ISO builder =="
+echo "== Zaone OS V2.1 ISO builder =="
 echo "Debian Trixie amd64 with Trixie backports"
 
 apt-get update
 apt-get install -y --no-install-recommends ca-certificates debian-archive-keyring
 
-rm -f /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources
+# Replace any preloaded source definitions so APT does not choke on mixed Signed-By values
+rm -f /etc/apt/sources.list
+rm -f /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources
 cat >/etc/apt/sources.list.d/zaone-build.sources <<'EOF'
 Types: deb
 URIs: https://deb.debian.org/debian
@@ -97,9 +99,9 @@ lb config \
   --mirror-bootstrap "https://deb.debian.org/debian" \
   --mirror-chroot "https://deb.debian.org/debian" \
   --mirror-binary "https://deb.debian.org/debian" \
-  --iso-application "Zaone OS V2" \
+  --iso-application "Zaone OS V2.1" \
   --iso-publisher "Zaone OS Project" \
-  --iso-volume "ZAONE_V2" \
+  --iso-volume "ZAONE_V21" \
   --bootappend-live "boot=live components quiet splash loglevel=3 systemd.show_status=false vt.global_cursor_default=0 username=zaone user-fullname=Zaone hostname=zaone-os locales=en_AU.UTF-8 keyboard-layouts=us"
 
 # Start with live-build's complete BIOS and UEFI templates, then replace the
@@ -115,10 +117,10 @@ done < <(find config/bootloaders -mindepth 1 -maxdepth 1 -type d -print0)
 while IFS= read -r -d '' text_file; do
   sed -i \
     -e 's/splash\.svg/splash.png/g' \
-    -e 's/Debian GNU\/Linux/Zaone OS V2/g' \
-    -e 's/Debian Live/Zaone OS V2/g' \
-    -e 's/Live system/Start Zaone OS V2/g' \
-    -e 's/Boot menu/Zaone OS V2/g' \
+    -e 's/Debian GNU\/Linux/Zaone OS V2.1/g' \
+    -e 's/Debian Live/Zaone OS V2.1/g' \
+    -e 's/Live system/Start Zaone OS V2.1/g' \
+    -e 's/Boot menu/Zaone OS V2.1/g' \
     "$text_file" || true
 done < <(grep -RIlZ -E 'splash\.svg|Debian GNU/Linux|Debian Live|Live system|Boot menu' config/bootloaders || true)
 
@@ -127,10 +129,10 @@ lb build 2>&1 | tee "$OUT/build.log"
 ISO="$(find . -maxdepth 1 -type f -name '*.iso' -print -quit)"
 [[ -n "$ISO" ]] || { echo "Build ended without an ISO" >&2; exit 4; }
 
-cp "$ISO" "$OUT/zaone-v2-amd64.iso"
-sha256sum "$OUT/zaone-v2-amd64.iso" >"$OUT/zaone-v2-amd64.iso.sha256"
+cp "$ISO" "$OUT/zaone-v2.1-amd64.iso"
+sha256sum "$OUT/zaone-v2.1-amd64.iso" >"$OUT/zaone-v2.1-amd64.iso.sha256"
 cp "$LIST" "$OUT/requested-packages.txt"
 
 echo
-echo "Built: $OUT/zaone-v2-amd64.iso"
-ls -lh "$OUT/zaone-v2-amd64.iso"
+echo "Built: $OUT/zaone-v2.1-amd64.iso"
+ls -lh "$OUT/zaone-v2.1-amd64.iso"

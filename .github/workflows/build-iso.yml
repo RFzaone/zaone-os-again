@@ -1,4 +1,4 @@
-name: Build Zaone V2 ISO
+name: Build Zaone V2.1 ISO
 
 on:
   workflow_dispatch:
@@ -36,7 +36,7 @@ jobs:
       - name: Upload ISO and reports
         uses: actions/upload-artifact@v4
         with:
-          name: zaone-v2-iso
+          name: zaone-v2.1-iso
           path: out/
           compression-level: 0
           if-no-files-found: error

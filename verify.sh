@@ -63,4 +63,4 @@ if grep -RnE 'TODO|COMING SOON|NOT IMPLEMENTED|PLACEHOLDER' \
   exit 1
 fi
 
-echo "Zaone V2 source verification passed"
+echo "Zaone V2.1 source verification passed"

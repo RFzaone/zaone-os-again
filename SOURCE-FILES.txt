@@ -38,6 +38,7 @@ config/includes.chroot/etc/xdg/autostart/zaone-desktop-init.desktop
 config/includes.chroot/etc/xdg/autostart/zaone-first-setup.desktop
 config/includes.chroot/etc/xdg/autostart/zaone-lock.desktop
 config/includes.chroot/etc/xdg/autostart/zaone-theme-apply.desktop
+config/includes.chroot/etc/xdg/autostart/zaone-ui-layout.desktop
 config/includes.chroot/etc/xdg/xfce4/panel/launcher-2/zaone-search.desktop
 config/includes.chroot/etc/xdg/xfce4/panel/launcher-3/zaone-files.desktop
 config/includes.chroot/etc/xdg/xfce4/panel/launcher-4/zaone-terminal.desktop
@@ -54,6 +55,7 @@ config/includes.chroot/usr/local/bin/zaone-desktop-init
 config/includes.chroot/usr/local/bin/zaone-hw-report
 config/includes.chroot/usr/local/bin/zaone-setup
 config/includes.chroot/usr/local/bin/zaone-theme
+config/includes.chroot/usr/local/bin/zaone-ui-layout
 config/includes.chroot/usr/share/applications/zaone-files.desktop
 config/includes.chroot/usr/share/applications/zaone-hardware-report.desktop
 config/includes.chroot/usr/share/applications/zaone-install.desktop
@@ -69,6 +71,7 @@ config/includes.chroot/usr/share/plymouth/themes/zaone/zaone.plymouth
 config/includes.chroot/usr/share/plymouth/themes/zaone/zaone.script
 config/includes.chroot/usr/share/polkit-1/actions/org.zaone.setup.policy
 config/includes.chroot/usr/share/zaone/zaone-avatar.png
+docs/DESIGN-METRICS.md
 docs/HARDWARE-TEST-MATRIX.md
 docs/KNOWN-LIMITS.md
 docs/SECURITY.md

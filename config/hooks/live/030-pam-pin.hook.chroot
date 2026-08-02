@@ -9,33 +9,12 @@ for service in lightdm xfce4-screensaver; do
     exit 1
   fi
 
-  # Already patched
-  if grep -Eq 'zaone-auth' "$file"; then
-    continue
+  if ! grep -Eq '^[[:space:]]*@include[[:space:]]+common-auth' "$file"; then
+    echo "Could not find common-auth include in $file" >&2
+    exit 1
   fi
 
-  # Debian PAM format 1
-  if grep -Eq '^[[:space:]]*@include[[:space:]]+common-auth' "$file"; then
-    sed -i \
-      '0,/^[[:space:]]*@include[[:space:]]\+common-auth/s//\@include zaone-auth/' \
-      "$file"
-
-  # Debian PAM format 2
-  elif grep -Eq '^[[:space:]]*auth[[:space:]]+include[[:space:]]+common-auth' "$file"; then
-    sed -i \
-      '0,/^[[:space:]]*auth[[:space:]]\+include[[:space:]]\+common-auth/s//auth include zaone-auth/' \
-      "$file"
-
-  # Fallback while keeping account/session rules intact
-  else
-    tmp="$(mktemp)"
-    {
-      head -n 1 "$file"
-      echo '@include zaone-auth'
-      tail -n +2 "$file"
-    } > "$tmp"
-
-    cat "$tmp" > "$file"
-    rm -f "$tmp"
-  fi
+  sed -i \
+    '0,/^[[:space:]]*@include[[:space:]]\\+common-auth/s//\\@include zaone-auth/' \
+    "$file"
 done
