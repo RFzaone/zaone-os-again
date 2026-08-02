@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Install Zaone OS
-Comment=Install Zaone OS to this computer
-Icon=system-software-install
-Exec=sudo debian-installer-launcher
-Terminal=false
-Categories=System;

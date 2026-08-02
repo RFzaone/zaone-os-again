@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Terminal
-Icon=utilities-terminal
-Exec=xfce4-terminal
-Terminal=false
-Categories=System;TerminalEmulator;

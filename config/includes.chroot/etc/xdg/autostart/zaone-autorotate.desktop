@@ -1,6 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Zaone Auto Rotate
-Exec=/usr/local/bin/zaone-autorotate
-OnlyShowIn=XFCE;
-X-GNOME-Autostart-enabled=true

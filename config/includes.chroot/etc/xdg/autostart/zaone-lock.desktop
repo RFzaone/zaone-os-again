@@ -1,6 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Zaone Lock Screen
-Exec=xfce4-screensaver
-OnlyShowIn=XFCE;
-X-GNOME-Autostart-enabled=true

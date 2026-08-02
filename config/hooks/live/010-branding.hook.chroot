@@ -1,7 +1,0 @@
-#!/bin/sh
-set -eu
-
-ln -sf /usr/share/zoneinfo/Australia/Melbourne /etc/localtime
-printf 'Australia/Melbourne\n' >/etc/timezone
-update-desktop-database /usr/share/applications || true
-gtk-update-icon-cache -f /usr/share/icons/hicolor || true

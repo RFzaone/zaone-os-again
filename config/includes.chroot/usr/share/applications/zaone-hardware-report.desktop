@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Hardware Report
-Comment=Create a driver and hardware report
-Icon=computer
-Exec=xfce4-terminal --hold -e zaone-hw-report
-Terminal=false
-Categories=System;

@@ -1,6 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Zaone Desktop Initialization
-Exec=/usr/local/bin/zaone-desktop-init
-OnlyShowIn=XFCE;
-X-GNOME-Autostart-enabled=true

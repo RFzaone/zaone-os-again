@@ -1,6 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Apply Zaone Appearance
-Exec=/usr/local/bin/zaone-theme --apply-saved
-OnlyShowIn=XFCE;
-X-GNOME-Autostart-enabled=true

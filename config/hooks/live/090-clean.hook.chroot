@@ -1,8 +1,0 @@
-#!/bin/sh
-set -eu
-
-apt-get clean
-rm -rf /var/lib/apt/lists/*
-rm -f /etc/machine-id
-touch /etc/machine-id
-rm -f /var/lib/dbus/machine-id

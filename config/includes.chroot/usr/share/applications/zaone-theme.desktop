@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Zaone Appearance
-Comment=Switch between light and dark mode
-Icon=preferences-desktop-theme
-Exec=zaone-theme --choose
-Terminal=false
-Categories=Settings;DesktopSettings;
