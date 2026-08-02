@@ -1,0 +1,148 @@
+#!/usr/bin/env python3
+import grp
+import json
+import os
+import pwd
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+from argon2 import PasswordHasher
+
+STATE = Path("/var/lib/zaone/setup-complete")
+PIN_DIR = Path("/etc/zaone/pins")
+LIVE_AUTOLOGIN = Path("/etc/lightdm/lightdm.conf.d/50-zaone-live.conf")
+
+def die(message: str, code: int = 1) -> None:
+    print(message, file=sys.stderr)
+    raise SystemExit(code)
+
+def run(args, *, input_text=None) -> None:
+    subprocess.run(args, input=input_text, text=True, check=True)
+
+def validate_caller() -> None:
+    if os.geteuid() != 0:
+        die("This helper must run through pkexec.")
+
+    caller_uid = os.environ.get("PKEXEC_UID")
+    if not caller_uid or not caller_uid.isdigit():
+        die("Missing caller identity.")
+
+    caller = pwd.getpwuid(int(caller_uid)).pw_name
+    try:
+        setup_group = grp.getgrnam("zaone-setup")
+    except KeyError:
+        die("Setup authorization group is missing.")
+
+    caller_record = pwd.getpwnam(caller)
+    if caller not in setup_group.gr_mem and caller_record.pw_gid != setup_group.gr_gid:
+        die("Caller is not authorized for first setup.")
+
+def main() -> None:
+    validate_caller()
+
+    if STATE.exists():
+        die("Zaone setup has already been completed.")
+
+    try:
+        data = json.load(sys.stdin)
+    except Exception:
+        die("Invalid setup request.")
+
+    username = str(data.get("username", "")).strip().lower()
+    password = str(data.get("password", ""))
+    pin = str(data.get("pin", ""))
+    theme = str(data.get("theme", "")).lower()
+
+    if not re.fullmatch(r"[a-z][a-z0-9_-]{2,31}", username):
+        die("Username must start with a letter and use 3-32 lowercase letters, numbers, _ or -.")
+    if username in {"root", "zaone", "nobody"}:
+        die("That username is reserved.")
+    if len(password) < 8:
+        die("Password must contain at least 8 characters.")
+    if not re.fullmatch(r"\d{4,8}", pin):
+        die("PIN must contain 4-8 digits.")
+    if theme not in {"light", "dark"}:
+        die("Theme must be light or dark.")
+
+    try:
+        pwd.getpwnam(username)
+        die("That username already exists.")
+    except KeyError:
+        pass
+
+    groups = []
+    for name in ("sudo", "audio", "video", "plugdev", "netdev", "bluetooth", "lp", "scanner"):
+        try:
+            grp.getgrnam(name)
+            groups.append(name)
+        except KeyError:
+            pass
+
+    args = ["useradd", "--create-home", "--user-group", "--shell", "/bin/bash"]
+    if groups:
+        args += ["--groups", ",".join(groups)]
+    args.append(username)
+    run(args)
+
+    try:
+        run(["chpasswd"], input_text=f"{username}:{password}\n")
+
+        PIN_DIR.mkdir(parents=True, exist_ok=True)
+        os.chmod(PIN_DIR, 0o700)
+
+        pin_file = PIN_DIR / f"{username}.argon2"
+        pin_file.write_text(
+            PasswordHasher(
+                time_cost=3,
+                memory_cost=65536,
+                parallelism=2,
+            ).hash(pin) + "\n",
+            encoding="utf-8",
+        )
+        os.chmod(pin_file, 0o600)
+
+        user_record = pwd.getpwnam(username)
+        home = Path(user_record.pw_dir)
+        (home / ".config" / "zaone").mkdir(parents=True, exist_ok=True)
+        (home / ".config" / "zaone" / "theme").write_text(theme + "\n", encoding="utf-8")
+        shutil.copy2("/usr/share/zaone/zaone-avatar.png", home / ".face")
+
+        desktop = home / "Desktop"
+        desktop.mkdir(exist_ok=True)
+        for app in (
+            "zaone-files.desktop",
+            "zaone-terminal.desktop",
+            "zaone-theme.desktop",
+            "zaone-hardware-report.desktop",
+        ):
+            source = Path("/usr/share/applications") / app
+            if source.exists():
+                destination = desktop / app
+                shutil.copy2(source, destination)
+                os.chmod(destination, 0o755)
+
+        run(["chown", "-R", f"{username}:{username}", str(home)])
+
+        if LIVE_AUTOLOGIN.exists():
+            LIVE_AUTOLOGIN.rename(LIVE_AUTOLOGIN.with_suffix(".disabled"))
+
+        subprocess.run(["passwd", "--lock", "zaone"], check=False)
+        Path("/etc/sudoers.d/90-zaone-live").unlink(missing_ok=True)
+
+        STATE.parent.mkdir(parents=True, exist_ok=True)
+        STATE.write_text(username + "\n", encoding="utf-8")
+        os.chmod(STATE, 0o600)
+
+    except Exception:
+        subprocess.run(["userdel", "--remove", username], check=False)
+        pin_path = PIN_DIR / f"{username}.argon2"
+        pin_path.unlink(missing_ok=True)
+        raise
+
+    print("OK")
+
+if __name__ == "__main__":
+    main()

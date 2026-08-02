@@ -1,0 +1,220 @@
+#!/usr/bin/env python3
+import json
+import os
+import re
+import subprocess
+from pathlib import Path
+
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk, GLib
+
+STATE = Path("/var/lib/zaone/setup-complete")
+
+CSS = b"""
+window { background: #0b0c13; color: #f5f7ff; }
+#card { background: #171925; border-radius: 20px; padding: 30px; }
+#title { font-size: 30px; font-weight: 700; }
+#subtitle { color: #aeb3c3; font-size: 13px; }
+entry { min-height: 42px; border-radius: 10px; padding: 0 12px; }
+button { min-height: 44px; border-radius: 10px; font-weight: 600; }
+#primary { background: #eceeff; color: #10111a; }
+#error { color: #ff8e9b; }
+#success { color: #9ff0b6; }
+"""
+
+class SetupWindow(Gtk.Window):
+    def __init__(self):
+        super().__init__(title="Welcome to Zaone OS V2.1")
+        self.set_default_size(760, 700)
+        self.set_position(Gtk.WindowPosition.CENTER)
+        self.set_resizable(False)
+        self.set_keep_above(True)
+        self.set_skip_taskbar_hint(True)
+        self.connect("delete-event", lambda *_: True)
+
+        provider = Gtk.CssProvider()
+        provider.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(),
+            provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+        )
+
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        outer.set_border_width(28)
+        self.add(outer)
+
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        card.set_name("card")
+        card.set_border_width(28)
+        outer.pack_start(card, True, True, 0)
+
+        logo = Gtk.Image.new_from_file("/usr/share/pixmaps/zaone.png")
+        logo.set_pixel_size(90)
+        card.pack_start(logo, False, False, 0)
+
+        title = Gtk.Label(label="Set up Zaone OS V2.1")
+        title.set_name("title")
+        card.pack_start(title, False, False, 0)
+
+        subtitle = Gtk.Label(
+            label="Create your account, set your password and PIN, and choose light or dark mode."
+        )
+        subtitle.set_name("subtitle")
+        card.pack_start(subtitle, False, False, 0)
+
+        self.username = self.field(card, "Choose a username", visible=True)
+        self.username.set_text("")
+        self.password = self.field(card, "Password (8+ characters)", visible=False)
+        self.password_confirm = self.field(card, "Confirm password", visible=False)
+        self.pin = self.field(card, "PIN (4-8 digits)", visible=False)
+        self.pin_confirm = self.field(card, "Confirm PIN", visible=False)
+
+        theme_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=18)
+        theme_label = Gtk.Label(label="Appearance")
+        theme_label.set_xalign(0)
+        theme_box.pack_start(theme_label, True, True, 0)
+
+        self.dark = Gtk.RadioButton.new_with_label_from_widget(None, "Dark")
+        self.light = Gtk.RadioButton.new_with_label_from_widget(self.dark, "Light")
+        self.dark.set_active(True)
+        theme_box.pack_start(self.dark, False, False, 0)
+        theme_box.pack_start(self.light, False, False, 0)
+        card.pack_start(theme_box, False, False, 2)
+
+        self.message = Gtk.Label()
+        self.message.set_name("error")
+        self.message.set_line_wrap(True)
+        card.pack_start(self.message, False, False, 0)
+
+        self.spinner = Gtk.Spinner()
+        card.pack_start(self.spinner, False, False, 0)
+
+        self.button = Gtk.Button(label="Create account and continue")
+        self.button.set_name("primary")
+        self.button.connect("clicked", self.submit)
+        card.pack_start(self.button, False, False, 4)
+
+    def field(self, parent, placeholder, visible):
+        entry = Gtk.Entry()
+        entry.set_placeholder_text(placeholder)
+        entry.set_visibility(visible)
+        entry.set_invisible_char("•")
+        parent.pack_start(entry, False, False, 0)
+        return entry
+
+    def set_busy(self, busy):
+        self.button.set_sensitive(not busy)
+        for widget in (
+            self.username,
+            self.password,
+            self.password_confirm,
+            self.pin,
+            self.pin_confirm,
+            self.dark,
+            self.light,
+        ):
+            widget.set_sensitive(not busy)
+
+        if busy:
+            self.spinner.start()
+        else:
+            self.spinner.stop()
+
+    def validate(self):
+        username = self.username.get_text().strip().lower()
+        password = self.password.get_text()
+        pin = self.pin.get_text()
+
+        if not re.fullmatch(r"[a-z][a-z0-9_-]{2,31}", username):
+            return None, "Username must use 3-32 lowercase letters, numbers, _ or - and start with a letter."
+        if len(password) < 8:
+            return None, "Password must contain at least 8 characters."
+        if password != self.password_confirm.get_text():
+            return None, "Passwords do not match."
+        if not re.fullmatch(r"\d{4,8}", pin):
+            return None, "PIN must contain 4-8 digits."
+        if pin != self.pin_confirm.get_text():
+            return None, "PINs do not match."
+
+        return {
+            "username": username,
+            "password": password,
+            "pin": pin,
+            "theme": "dark" if self.dark.get_active() else "light",
+        }, None
+
+    def submit(self, _button):
+        data, error = self.validate()
+        if error:
+            self.message.set_name("error")
+            self.message.set_text(error)
+            return
+
+        self.message.set_text("")
+        self.set_busy(True)
+        GLib.idle_add(self.run_helper, data)
+
+    def run_helper(self, data):
+        try:
+            completed = subprocess.run(
+                ["pkexec", "/usr/lib/zaone/setup-helper"],
+                input=json.dumps(data),
+                text=True,
+                capture_output=True,
+                timeout=90,
+            )
+
+            self.password.set_text("")
+            self.password_confirm.set_text("")
+            self.pin.set_text("")
+            self.pin_confirm.set_text("")
+
+            if completed.returncode != 0:
+                self.message.set_name("error")
+                self.message.set_text(completed.stderr.strip() or "Setup failed.")
+                self.set_busy(False)
+                return False
+
+            self.spinner.stop()
+            self.button.set_label("Sign out and use your account")
+            self.button.disconnect_by_func(self.submit)
+            self.button.connect("clicked", self.sign_out)
+            self.button.set_sensitive(True)
+
+            self.message.set_name("success")
+            self.message.set_text(
+                "Setup complete. Your password or PIN can now unlock Zaone."
+            )
+
+            for widget in (
+                self.username,
+                self.password,
+                self.password_confirm,
+                self.pin,
+                self.pin_confirm,
+                self.dark,
+                self.light,
+            ):
+                widget.set_sensitive(False)
+
+        except Exception as exc:
+            self.message.set_name("error")
+            self.message.set_text(f"Setup failed: {exc}")
+            self.set_busy(False)
+
+        return False
+
+    def sign_out(self, _button):
+        subprocess.Popen(["xfce4-session-logout", "--logout"])
+        Gtk.main_quit()
+
+if __name__ == "__main__":
+    if STATE.exists() or os.environ.get("USER") != "zaone":
+        raise SystemExit(0)
+
+    window = SetupWindow()
+    window.show_all()
+    window.present()
+    Gtk.main()

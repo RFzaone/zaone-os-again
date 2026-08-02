@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+
+apt-get update
+DEBIAN_FRONTEND=noninteractive apt-get install -y -t trixie-backports \
+  linux-image-amd64 \
+  firmware-iwlwifi \
+  firmware-intel-graphics \
+  firmware-sof-signed

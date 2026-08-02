@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Zaone First Setup
+Comment=Create the first real Zaone OS user
+Exec=/usr/local/bin/zaone-first-setup-launcher
+TryExec=/usr/local/bin/zaone-first-setup-launcher
+OnlyShowIn=XFCE;
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=3

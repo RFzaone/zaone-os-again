@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Apply Zaone UI Layout
+Exec=/usr/local/bin/zaone-ui-layout
+OnlyShowIn=XFCE;
+X-GNOME-Autostart-enabled=true

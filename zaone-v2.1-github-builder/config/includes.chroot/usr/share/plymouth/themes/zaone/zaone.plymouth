@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Zaone OS
+Description=Zaone OS V2.1 boot animation
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/zaone
+ScriptFile=/usr/share/plymouth/themes/zaone/zaone.script

@@ -1,0 +1,64 @@
+#!/bin/sh
+set -eu
+
+# This reset is ONLY for the live ISO. Installed systems are never touched.
+case " $(cat /proc/cmdline 2>/dev/null || true) " in
+  *" boot=live "*|*" boot=live"*) ;;
+  *) exit 0 ;;
+esac
+
+echo "Zaone: preparing clean live first setup"
+
+mkdir -p /var/lib/zaone /etc/zaone/pins /etc/lightdm/lightdm.conf.d
+chmod 700 /etc/zaone/pins
+
+# A live ISO must always begin with no completed setup and no user-created PINs.
+rm -f /var/lib/zaone/setup-complete
+find /etc/zaone/pins -mindepth 1 -maxdepth 1 -type f -delete 2>/dev/null || true
+
+# Remove accidental regular users baked into a test image. The temporary live
+# account is the only regular account allowed before the setup window runs.
+awk -F: '$3 >= 1000 && $3 < 60000 && $1 != "zaone" {print $1}' /etc/passwd |
+while IFS= read -r account; do
+  [ -n "$account" ] || continue
+  pkill -KILL -u "$account" 2>/dev/null || true
+  userdel --remove --force "$account" 2>/dev/null || userdel --force "$account" 2>/dev/null || true
+done
+
+# live-build normally creates this user. Recreate it if a broken image omitted it.
+if ! id zaone >/dev/null 2>&1; then
+  useradd --create-home --user-group --shell /bin/bash --comment "Zaone Live" zaone
+fi
+
+groupadd -f zaone-setup
+for group in sudo audio video plugdev netdev bluetooth lp scanner zaone-setup; do
+  if getent group "$group" >/dev/null 2>&1; then
+    usermod -aG "$group" zaone || true
+  fi
+done
+
+# Blank password is only for the temporary autologin account in the live ISO.
+passwd -d zaone >/dev/null 2>&1 || true
+usermod -U zaone >/dev/null 2>&1 || true
+
+# Rebuild the live autologin file on every clean live boot.
+cat > /etc/lightdm/lightdm.conf.d/50-zaone-live.conf <<'CONF'
+[Seat:*]
+greeter-session=lightdm-gtk-greeter
+user-session=xfce
+autologin-user=zaone
+autologin-user-timeout=0
+allow-guest=false
+CONF
+chmod 644 /etc/lightdm/lightdm.conf.d/50-zaone-live.conf
+rm -f /etc/lightdm/lightdm.conf.d/50-zaone-live.disabled
+
+# Remove stale account metadata that can make LightDM display an old test name.
+rm -f /var/lib/AccountsService/users/* 2>/dev/null || true
+rm -f /var/lib/AccountsService/icons/* 2>/dev/null || true
+
+mkdir -p /home/zaone/.config/zaone /home/zaone/Desktop
+rm -f /home/zaone/.config/zaone/setup-complete
+chown -R zaone:zaone /home/zaone
+
+exit 0

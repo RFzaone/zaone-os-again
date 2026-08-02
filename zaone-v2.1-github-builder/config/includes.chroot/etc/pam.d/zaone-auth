@@ -1,0 +1,6 @@
+#%PAM-1.0
+# One prompt, full password first, then the same token is checked as a local PIN.
+auth [success=done new_authtok_reqd=done default=ignore] pam_unix.so try_first_pass
+auth [success=done default=die] pam_exec.so quiet expose_authtok /usr/lib/zaone/pam-pin-auth
+auth requisite pam_deny.so
+auth required pam_permit.so

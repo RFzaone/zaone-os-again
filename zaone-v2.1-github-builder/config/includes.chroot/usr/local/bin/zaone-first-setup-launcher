@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -u
+
+[[ "${USER:-}" == "zaone" ]] || exit 0
+[[ ! -e /var/lib/zaone/setup-complete ]] || exit 0
+
+sleep 4
+
+lock_dir="${XDG_RUNTIME_DIR:-/tmp}"
+mkdir -p "$lock_dir" 2>/dev/null || true
+exec 9>"$lock_dir/zaone-first-setup.lock"
+flock -n 9 || exit 0
+
+while [[ ! -e /var/lib/zaone/setup-complete ]]; do
+  /usr/local/bin/zaone-setup
+  [[ -e /var/lib/zaone/setup-complete ]] && exit 0
+  sleep 2
+done

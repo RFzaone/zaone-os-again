@@ -1,0 +1,12 @@
+[Unit]
+Description=Prepare a clean Zaone live first-boot session
+After=local-fs.target live-config.service
+Before=lightdm.service display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/zaone/live-firstboot-reset
+RemainAfterExit=yes
+
+[Install]
+WantedBy=graphical.target

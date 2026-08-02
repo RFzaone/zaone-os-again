@@ -1,0 +1,44 @@
+Window.SetBackgroundTopColor(0.015, 0.018, 0.030);
+Window.SetBackgroundBottomColor(0.015, 0.018, 0.030);
+
+logo.image = Image("zaone-logo.png");
+logo.sprite = Sprite(logo.image);
+logo.sprite.SetX(Window.GetWidth() / 2 - logo.image.GetWidth() / 2);
+logo.sprite.SetY(Window.GetHeight() / 2 - logo.image.GetHeight() / 2 - 45);
+
+title.image = Image.Text("ZAONE OS", 0.96, 0.97, 1.0, 1.0, "Sans 28");
+title.sprite = Sprite(title.image);
+title.sprite.SetX(Window.GetWidth() / 2 - title.image.GetWidth() / 2);
+title.sprite.SetY(Window.GetHeight() / 2 + 115);
+
+subtitle.image = Image.Text("V2.1", 0.64, 0.66, 0.74, 1.0, "Sans 13");
+subtitle.sprite = Sprite(subtitle.image);
+subtitle.sprite.SetX(Window.GetWidth() / 2 - subtitle.image.GetWidth() / 2);
+subtitle.sprite.SetY(Window.GetHeight() / 2 + 155);
+
+fun refresh_callback ()
+{
+    progress = Plymouth.GetBootProgress();
+    width = 190;
+    height = 4;
+
+    bar.image = Image(width, height);
+    bar.image.Fill(0.15, 0.16, 0.20, 1.0);
+
+    fill_width = Math.Int(width * progress);
+    if (fill_width < 1)
+        fill_width = 1;
+
+    fill.image = Image(fill_width, height);
+    fill.image.Fill(0.93, 0.94, 1.0, 1.0);
+    bar.image.Paste(fill.image, 0, 0);
+
+    if (!bar.sprite)
+        bar.sprite = Sprite();
+
+    bar.sprite.SetImage(bar.image);
+    bar.sprite.SetX(Window.GetWidth() / 2 - width / 2);
+    bar.sprite.SetY(Window.GetHeight() / 2 + 185);
+}
+
+Plymouth.SetRefreshFunction(refresh_callback);
