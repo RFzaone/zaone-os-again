@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=zaone Driver Check
-Comment=Inspect hardware, loaded drivers, and missing firmware
-Exec=xfce4-terminal --hold -e zaone-driver-check
-Icon=computer
-Categories=System;Settings;
-Terminal=false
