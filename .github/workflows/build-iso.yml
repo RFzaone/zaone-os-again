@@ -1,0 +1,42 @@
+name: Build Zaone V2 ISO
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "build.sh"
+      - "verify.sh"
+      - "assets/**"
+      - "manifests/**"
+      - "config/**"
+      - ".github/workflows/build-iso.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Verify source
+        run: |
+          chmod +x verify.sh
+          ./verify.sh
+
+      - name: Build inside Debian Trixie
+        run: |
+          docker run --privileged --rm             -v "$PWD:/work"             -w /work             debian:trixie             bash -lc 'chmod +x build.sh && ./build.sh'
+
+      - name: Upload ISO and reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: zaone-v2-iso
+          path: out/
+          compression-level: 0
+          if-no-files-found: error

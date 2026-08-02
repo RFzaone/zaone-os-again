@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -u
+sleep 3
+
+WALLPAPER="/usr/share/backgrounds/zaone/zaone-wallpaper.png"
+
+if ! pgrep -x xfce4-panel >/dev/null 2>&1; then
+  xfce4-panel --restart >/dev/null 2>&1 &
+fi
+
+monitor="$(xrandr --query 2>/dev/null | awk '/ connected primary/{print $1; exit} / connected/{fallback=$1} END{if (fallback) print fallback}' | head -n1)"
+monitor="${monitor:-monitor0}"
+actual_base="/backdrop/screen0/monitor${monitor}/workspace0"
+
+# Always create the property for the actual connected display, then also update
+# any paths Xfce already generated.
+xfconf-query -c xfce4-desktop -p "$actual_base/last-image" -n -t string -s "$WALLPAPER" >/dev/null 2>&1 || true
+xfconf-query -c xfce4-desktop -p "$actual_base/image-style" -n -t int -s 5 >/dev/null 2>&1 || true
+
+while IFS= read -r prop; do
+  xfconf-query -c xfce4-desktop -p "$prop" -s "$WALLPAPER" >/dev/null 2>&1 || true
+done < <(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep '/last-image$' || true)
+
+xfconf-query -c xfce4-screensaver -p /lock/enabled -n -t bool -s true >/dev/null 2>&1 || true
+xfconf-query -c xfce4-screensaver -p /saver/enabled -n -t bool -s true >/dev/null 2>&1 || true
+xfconf-query -c xfce4-screensaver -p /saver/idle-activation/enabled -n -t bool -s true >/dev/null 2>&1 || true
+xfconf-query -c xfce4-screensaver -p /saver/idle-activation/delay -n -t int -s 10 >/dev/null 2>&1 || true
+xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/lock-screen-suspend-hibernate -n -t bool -s true >/dev/null 2>&1 || true
+
+xfdesktop --reload >/dev/null 2>&1 || true

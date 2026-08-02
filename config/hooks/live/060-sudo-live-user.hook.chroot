@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+cat >/etc/sudoers.d/90-zaone-live <<'EOF'
+zaone ALL=(ALL) NOPASSWD: /usr/sbin/debian-installer-launcher
+EOF
+chmod 440 /etc/sudoers.d/90-zaone-live
+visudo -cf /etc/sudoers.d/90-zaone-live

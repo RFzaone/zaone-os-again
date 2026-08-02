@@ -1,0 +1,11 @@
+PRETTY_NAME="Zaone OS V2"
+NAME="Zaone OS"
+VERSION_ID="2"
+VERSION="2 (Trixie)"
+VERSION_CODENAME=trixie
+ID=zaone
+ID_LIKE=debian
+HOME_URL="https://github.com/RFzaone/zaone-os-again"
+SUPPORT_URL="https://github.com/RFzaone/zaone-os-again/issues"
+BUG_REPORT_URL="https://github.com/RFzaone/zaone-os-again/issues"
+LOGO=zaone

@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+
+for service in lightdm xfce4-screensaver; do
+  file="/etc/pam.d/$service"
+
+  if [ ! -f "$file" ]; then
+    echo "Required PAM service missing: $file" >&2
+    exit 1
+  fi
+
+  if ! grep -Eq '^[[:space:]]*@include[[:space:]]+common-auth' "$file"; then
+    echo "Could not find common-auth include in $file" >&2
+    exit 1
+  fi
+
+  sed -i \
+    '0,/^[[:space:]]*@include[[:space:]]\\+common-auth/s//\\@include zaone-auth/' \
+    "$file"
+done

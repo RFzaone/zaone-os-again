@@ -1,0 +1,15 @@
+EXTRACT THIS ZIP FIRST.
+
+Upload all files and folders inside `zaone-v2-github-builder` to the ROOT of your GitHub repository.
+
+The repository root must contain:
+- build.sh
+- verify.sh
+- .github
+- assets
+- config
+- manifests
+- docs
+
+Then open GitHub Actions and run:
+Build Zaone V2 ISO
