@@ -9,12 +9,29 @@ for service in lightdm xfce4-screensaver; do
     exit 1
   fi
 
-  if ! grep -Eq '^[[:space:]]*@include[[:space:]]+common-auth' "$file"; then
-    echo "Could not find common-auth include in $file" >&2
-    exit 1
+  if grep -Eq 'zaone-auth' "$file"; then
+    continue
   fi
 
-  sed -i \
-    '0,/^[[:space:]]*@include[[:space:]]\\+common-auth/s//\\@include zaone-auth/' \
-    "$file"
+  if grep -Eq '^[[:space:]]*@include[[:space:]]+common-auth' "$file"; then
+    sed -i \
+      '0,/^[[:space:]]*@include[[:space:]]\+common-auth/s//\@include zaone-auth/' \
+      "$file"
+
+  elif grep -Eq '^[[:space:]]*auth[[:space:]]+include[[:space:]]+common-auth' "$file"; then
+    sed -i \
+      '0,/^[[:space:]]*auth[[:space:]]\+include[[:space:]]\+common-auth/s//auth include zaone-auth/' \
+      "$file"
+
+  else
+    tmp="$(mktemp)"
+    {
+      head -n 1 "$file"
+      echo '@include zaone-auth'
+      tail -n +2 "$file"
+    } > "$tmp"
+
+    cat "$tmp" > "$file"
+    rm -f "$tmp"
+  fi
 done
