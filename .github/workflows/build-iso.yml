@@ -18,22 +18,37 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Prepare Docker
+      - name: Build zaone ISO
         run: |
-          docker --version
+          echo "Repository files:"
+          ls -la
+          test -f build.sh
+
           docker pull debian:trixie
 
-      - name: Build zaone ISO in privileged Debian Trixie
-        run: |
-          docker run --rm --privileged             -v "$GITHUB_WORKSPACE:/workspace"             -w /workspace             debian:trixie             bash -lc '
+          docker run --rm --privileged \
+            --mount type=bind,source="${PWD}",target=/workspace \
+            -w /workspace \
+            debian:trixie \
+            bash -lc '
               set -e
               apt-get update
-              DEBIAN_FRONTEND=noninteractive apt-get install -y                 live-build                 debootstrap                 xorriso                 isolinux                 syslinux-common                 squashfs-tools                 ca-certificates                 curl                 git
+              DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                live-build \
+                debootstrap \
+                xorriso \
+                isolinux \
+                syslinux-common \
+                squashfs-tools \
+                ca-certificates \
+                curl \
+                git
+
               chmod +x build.sh
               ./build.sh
             '
 
-      - name: Show output files
+      - name: Check ISO
         run: |
           ls -lah out
           test -f out/zaone-v1-amd64.iso
