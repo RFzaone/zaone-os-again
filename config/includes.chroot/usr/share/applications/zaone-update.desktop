@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=zaone Update
+Comment=Update installed packages
+Exec=xfce4-terminal --hold -e zaone-update
+Icon=system-software-update
+Categories=System;Settings;

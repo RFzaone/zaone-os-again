@@ -1,0 +1,14 @@
+ZAONE OS QUICK START
+
+Super + Space    Open app search
+Super + E        Open Files
+Super + Enter    Open Terminal
+Super + L        Lock
+Print Screen     Screenshot
+
+Apps are available from the Zaone/application menu.
+Use Dark Mode or Light Mode from Settings.
+Use zaone Update to update packages.
+
+DRIVERS
+Run zaone-driver-check in Terminal to inspect hardware and missing firmware.

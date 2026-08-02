@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=zaone Recovery
+Exec=zaone-recovery-info
+Icon=system-reboot
+Categories=System;

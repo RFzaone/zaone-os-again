@@ -1,0 +1,32 @@
+name: Build zaone ISO
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - "config/**"
+      - "build.sh"
+      - ".github/workflows/build-iso.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build ISO
+        run: sudo ./build.sh
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: zaone-v1-iso
+          path: |
+            out/zaone-v1-amd64.iso
+            out/zaone-v1-amd64.iso.sha256
+            out/build.log
+          retention-days: 14

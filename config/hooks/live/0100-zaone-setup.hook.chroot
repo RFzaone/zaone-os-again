@@ -1,0 +1,78 @@
+#!/bin/sh
+set -eu
+
+# Create default live user conveniences.
+mkdir -p /etc/skel/Desktop
+mkdir -p /etc/skel/.config/autostart
+mkdir -p /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml
+
+# Allow the normal Debian live user to use sudo.
+printf 'zaone ALL=(ALL:ALL) ALL\n' > /etc/sudoers.d/90-zaone
+chmod 0440 /etc/sudoers.d/90-zaone
+
+# Branding.
+printf 'zaone OS v1 prototype\n' > /etc/zaone-release
+printf 'zaone-os\n' > /etc/hostname
+
+# Set a default wallpaper for XFCE.
+cat > /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-desktop" version="1.0">
+  <property name="backdrop" type="empty">
+    <property name="screen0" type="empty">
+      <property name="monitor0" type="empty">
+        <property name="workspace0" type="empty">
+          <property name="last-image" type="string" value="/usr/share/backgrounds/zaone/zaone-wallpaper.png"/>
+          <property name="image-style" type="int" value="5"/>
+        </property>
+      </property>
+    </property>
+  </property>
+</channel>
+EOF
+
+# Keyboard shortcuts.
+cat > /etc/skel/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-keyboard-shortcuts" version="1.0">
+  <property name="commands" type="empty">
+    <property name="custom" type="empty">
+      <property name="&lt;Super&gt;e" type="string" value="thunar"/>
+      <property name="&lt;Super&gt;Return" type="string" value="xfce4-terminal"/>
+      <property name="&lt;Super&gt;d" type="string" value="xfdesktop --menu"/>
+      <property name="&lt;Super&gt;l" type="string" value="xflock4"/>
+      <property name="Print" type="string" value="xfce4-screenshooter"/>
+      <property name="&lt;Super&gt;space" type="string" value="xfce4-appfinder --collapsed"/>
+    </property>
+  </property>
+</channel>
+EOF
+
+# Desktop launchers.
+cp /usr/share/applications/thunar.desktop /etc/skel/Desktop/Files.desktop || true
+cp /usr/share/applications/xfce4-terminal.desktop /etc/skel/Desktop/Terminal.desktop || true
+chmod +x /etc/skel/Desktop/*.desktop 2>/dev/null || true
+
+# App autostart for first-run configuration.
+cat > /etc/skel/.config/autostart/zaone-first-run.desktop <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Zaone first run
+Exec=/usr/local/bin/zaone-first-run
+OnlyShowIn=XFCE;
+X-GNOME-Autostart-enabled=true
+EOF
+
+# LightDM branding.
+if [ -d /etc/lightdm ]; then
+  cat > /etc/lightdm/lightdm-gtk-greeter.conf <<'EOF'
+[greeter]
+background=/usr/share/backgrounds/zaone/zaone-wallpaper.png
+theme-name=Adwaita-dark
+icon-theme-name=Papirus-Dark
+font-name=Noto Sans 11
+EOF
+fi
+
+# Flatpak remote helper runs on first boot rather than during offline image creation.
+chmod +x /usr/local/bin/zaone-* || true

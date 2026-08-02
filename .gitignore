@@ -1,0 +1,12 @@
+.cache/
+auto/
+binary/
+chroot/
+chroot.files/
+chroot.packages.*
+config/bootstrap
+local/
+out/
+*.iso
+*.img
+*.log

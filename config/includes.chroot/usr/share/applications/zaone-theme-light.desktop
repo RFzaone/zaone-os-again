@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Light Mode
+Exec=zaone-theme-light
+Icon=preferences-desktop-theme
+Categories=Settings;

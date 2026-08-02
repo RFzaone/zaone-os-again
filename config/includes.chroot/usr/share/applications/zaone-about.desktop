@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=About zaone OS
+Comment=Version and project information
+Exec=zaone-about
+Icon=zaone-logo
+Categories=Settings;System;
