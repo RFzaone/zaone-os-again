@@ -16,6 +16,7 @@ echo "Debian Trixie amd64 with Trixie backports"
 apt-get update
 apt-get install -y --no-install-recommends ca-certificates debian-archive-keyring
 
+rm -f /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources
 cat >/etc/apt/sources.list.d/zaone-build.sources <<'EOF'
 Types: deb
 URIs: https://deb.debian.org/debian
