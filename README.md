@@ -1,5 +1,11 @@
 # zaone OS v1 Prototype ISO Kit
 
+
+> **FULL FIXED PACKAGE:** This folder contains the complete Zaone OS v1 build project,
+> not only a patch. The Debian Trixie, security repository, privileged container,
+> project-mount, driver-package, and artifact fixes are already merged.
+
+
 This repository builds a bootable **64-bit live ISO** using Debian Live Build.
 
 ## Easiest method: GitHub Actions, no admin on your laptop

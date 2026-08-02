@@ -1,0 +1,44 @@
+ZAONE OS V1 — FULL FIXED BUILD
+
+THIS IS THE COMPLETE PROJECT.
+It includes:
+- build.sh
+- GitHub Actions workflow
+- config folder
+- desktop setup
+- Zaone apps and commands
+- wallpaper and logo
+- driver and firmware package list
+- website starter
+- corrected Debian Trixie repositories
+- privileged build environment
+- automatic optional-package filtering
+
+HOW TO USE IT IN CODESPACES
+
+1. Upload:
+   zaone-v1-FULL-FIXED.zip
+
+2. Paste:
+
+   unzip -o zaone-v1-FULL-FIXED.zip
+   rm zaone-v1-FULL-FIXED.zip
+   chmod +x build.sh
+
+   git add -A
+   git commit -m "Install complete fixed zaone OS v1"
+   git push
+
+3. Go to:
+   GitHub > Actions > Build zaone ISO
+
+4. Wait for the green tick.
+
+5. Open the finished build and download:
+   zaone-v1-iso
+
+The artifact contains:
+- zaone-v1-amd64.iso
+- zaone-v1-amd64.iso.sha256
+- build.log
+- skipped-packages.txt

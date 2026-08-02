@@ -3,7 +3,7 @@ name: Build zaone ISO
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - "config/**"
       - "build.sh"
@@ -12,16 +12,74 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 180
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Build ISO
-        run: sudo ./build.sh
+      - name: Verify complete Zaone project
+        run: |
+          echo "Repository files:"
+          ls -la
+          test -f build.sh
+          test -d config
+          test -f config/package-lists/zaone.list.chroot
+          test -f config/includes.chroot/usr/share/backgrounds/zaone/zaone-wallpaper.png
+          test -f config/includes.chroot/usr/share/icons/hicolor/256x256/apps/zaone-logo.png
 
-      - name: Upload ISO
+      - name: Build zaone ISO in privileged Debian Trixie
+        run: |
+          docker pull debian:trixie
+
+          docker run --rm --privileged \
+            --mount type=bind,source="${PWD}",target=/workspace \
+            -w /workspace \
+            debian:trixie \
+            bash -lc '
+              set -Eeuo pipefail
+
+              cat > /etc/apt/sources.list.d/zaone.sources <<AptSources
+              Types: deb
+              URIs: https://deb.debian.org/debian
+              Suites: trixie trixie-updates
+              Components: main contrib non-free non-free-firmware
+              Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+
+              Types: deb
+              URIs: https://security.debian.org/debian-security
+              Suites: trixie-security
+              Components: main contrib non-free non-free-firmware
+              Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+              AptSources
+
+              rm -f /etc/apt/sources.list
+              apt-get update
+
+              DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                live-build \
+                debootstrap \
+                xorriso \
+                isolinux \
+                syslinux-common \
+                squashfs-tools \
+                ca-certificates \
+                debian-archive-keyring \
+                curl \
+                git
+
+              chmod +x build.sh
+              ./build.sh
+            '
+
+      - name: Check generated ISO
+        run: |
+          ls -lah out
+          test -s out/zaone-v1-amd64.iso
+          test -s out/zaone-v1-amd64.iso.sha256
+          sha256sum --check out/zaone-v1-amd64.iso.sha256
+
+      - name: Upload zaone ISO
         uses: actions/upload-artifact@v4
         with:
           name: zaone-v1-iso
@@ -29,4 +87,6 @@ jobs:
             out/zaone-v1-amd64.iso
             out/zaone-v1-amd64.iso.sha256
             out/build.log
+            out/skipped-packages.txt
           retention-days: 14
+          if-no-files-found: error
